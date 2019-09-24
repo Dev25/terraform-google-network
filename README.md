@@ -24,13 +24,13 @@ module "vpc" {
     network_name = "example-vpc"
     routing_mode = "GLOBAL"
 
-    subnets = [
-        {
+    subnets = {
+        subnet-01 = {
             subnet_name           = "subnet-01"
             subnet_ip             = "10.10.10.0/24"
             subnet_region         = "us-west1"
         },
-        {
+        subnet-02 = {
             subnet_name           = "subnet-02"
             subnet_ip             = "10.10.20.0/24"
             subnet_region         = "us-west1"
@@ -38,7 +38,7 @@ module "vpc" {
             subnet_flow_logs      = "true"
             description           = "This subnet has a description"
         },
-    ]
+    }
 
     secondary_ranges = {
         subnet-01 = [
@@ -51,15 +51,15 @@ module "vpc" {
         subnet-02 = []
     }
 
-    routes = [
-        {
+    routes = {
+        egress-internet = {
             name                   = "egress-internet"
             description            = "route through IGW to access internet"
             destination_range      = "0.0.0.0/0"
             tags                   = "egress-inet"
             next_hop_internet      = "true"
         },
-        {
+        app-proxy = {
             name                   = "app-proxy"
             description            = "route through proxy to reach app"
             destination_range      = "10.50.10.0/24"
@@ -67,7 +67,7 @@ module "vpc" {
             next_hop_instance      = "app-proxy-instance"
             next_hop_instance_zone = "us-west1-a"
         },
-    ]
+    }
 }
 ```
 

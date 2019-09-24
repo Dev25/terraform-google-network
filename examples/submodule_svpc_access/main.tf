@@ -27,18 +27,18 @@ module "net-vpc-shared" {
   network_name    = var.network_name
   shared_vpc_host = "true"
 
-  subnets = [
-    {
+  subnets = {
+    networking = {
       subnet_name   = "networking"
       subnet_ip     = "10.10.10.0/24"
       subnet_region = "europe-west1"
     },
-    {
+    data = {
       subnet_name   = "data"
       subnet_ip     = "10.10.20.0/24"
       subnet_region = "europe-west1"
     },
-  ]
+  }
 }
 
 module "net-svpc-access" {
