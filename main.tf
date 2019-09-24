@@ -38,43 +38,44 @@ resource "google_compute_shared_vpc_host_project" "shared_vpc_host" {
 	Subnet configuration
  *****************************************/
 resource "google_compute_subnetwork" "subnetwork" {
-  count = length(var.subnets)
+  for_each = var.subnets
 
-  name                     = var.subnets[count.index]["subnet_name"]
-  ip_cidr_range            = var.subnets[count.index]["subnet_ip"]
-  region                   = var.subnets[count.index]["subnet_region"]
-  private_ip_google_access = lookup(var.subnets[count.index], "subnet_private_access", "false")
-  enable_flow_logs         = lookup(var.subnets[count.index], "subnet_flow_logs", "false")
+  name                     = each.value["subnet_name"]
+  ip_cidr_range            = each.value["subnet_ip"]
+  region                   = each.value["subnet_region"]
+  private_ip_google_access = lookup(each.value, "subnet_private_access", "false")
+  enable_flow_logs         = lookup(each.value, "subnet_flow_logs", "false")
   network                  = google_compute_network.network.name
   project                  = var.project_id
-  secondary_ip_range       = [for i in range(length(contains(keys(var.secondary_ranges), var.subnets[count.index]["subnet_name"]) == true ? var.secondary_ranges[var.subnets[count.index]["subnet_name"]] : [])) : var.secondary_ranges[var.subnets[count.index]["subnet_name"]][i]]
-  description              = lookup(var.subnets[count.index], "description", null)
+  secondary_ip_range       = [for i in range(length(contains(keys(var.secondary_ranges), each.value["subnet_name"]) == true ? var.secondary_ranges[each.value["subnet_name"]] : [])) : var.secondary_ranges[each.value["subnet_name"]][i]]
+  description              = lookup(each.value, "description", null)
 }
 
 data "google_compute_subnetwork" "created_subnets" {
-  count   = length(var.subnets)
-  name    = element(google_compute_subnetwork.subnetwork.*.name, count.index)
-  region  = element(google_compute_subnetwork.subnetwork.*.region, count.index)
-  project = var.project_id
+  for_each = var.subnets
+  name     = google_compute_subnetwork.subnetwork[each.key].name
+  region   = google_compute_subnetwork.subnetwork[each.key].region
+  project  = var.project_id
 }
 
 /******************************************
 	Routes
  *****************************************/
 resource "google_compute_route" "route" {
-  count                  = length(var.routes)
+  for_each = var.routes
+
   project                = var.project_id
   network                = var.network_name
-  name                   = lookup(var.routes[count.index], "name", format("%s-%s-%d", lower(var.network_name), "route", count.index))
-  description            = lookup(var.routes[count.index], "description", "")
-  tags                   = compact(split(",", lookup(var.routes[count.index], "tags", "")))
-  dest_range             = lookup(var.routes[count.index], "destination_range", "")
-  next_hop_gateway       = lookup(var.routes[count.index], "next_hop_internet", "") == "true" ? "default-internet-gateway" : ""
-  next_hop_ip            = lookup(var.routes[count.index], "next_hop_ip", "")
-  next_hop_instance      = lookup(var.routes[count.index], "next_hop_instance", "")
-  next_hop_instance_zone = lookup(var.routes[count.index], "next_hop_instance_zone", "")
-  next_hop_vpn_tunnel    = lookup(var.routes[count.index], "next_hop_vpn_tunnel", "")
-  priority               = lookup(var.routes[count.index], "priority", "1000")
+  name                   = lookup(each.value, "name", format("%s-%s-%d", lower(var.network_name), "route", each.key))
+  description            = lookup(each.value, "description", "")
+  tags                   = compact(split(",", lookup(each.value, "tags", "")))
+  dest_range             = lookup(each.value, "destination_range", "")
+  next_hop_gateway       = lookup(each.value, "next_hop_internet", "") == "true" ? "default-internet-gateway" : ""
+  next_hop_ip            = lookup(each.value, "next_hop_ip", "")
+  next_hop_instance      = lookup(each.value, "next_hop_instance", "")
+  next_hop_instance_zone = lookup(each.value, "next_hop_instance_zone", "")
+  next_hop_vpn_tunnel    = lookup(each.value, "next_hop_vpn_tunnel", "")
+  priority               = lookup(each.value, "priority", "1000")
 
   depends_on = [
     google_compute_network.network,

@@ -35,8 +35,9 @@ variable "shared_vpc_host" {
 }
 
 variable "subnets" {
-  type        = list(map(string))
+  type        = map
   description = "The list of subnets being created"
+  default     = {}
 }
 
 variable "secondary_ranges" {
@@ -46,9 +47,9 @@ variable "secondary_ranges" {
 }
 
 variable "routes" {
-  type        = list(map(string))
+  type        = map
   description = "List of routes being created in this VPC"
-  default     = []
+  default     = {}
 }
 
 variable "delete_default_internet_gateway_routes" {
