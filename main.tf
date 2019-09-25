@@ -51,12 +51,6 @@ resource "google_compute_subnetwork" "subnetwork" {
   description              = lookup(each.value, "description", null)
 }
 
-data "google_compute_subnetwork" "created_subnets" {
-  for_each = var.subnets
-  name     = google_compute_subnetwork.subnetwork[each.key].name
-  region   = google_compute_subnetwork.subnetwork[each.key].region
-  project  = var.project_id
-}
 
 /******************************************
 	Routes
