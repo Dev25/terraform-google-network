@@ -35,7 +35,7 @@ variable "shared_vpc_host" {
 }
 
 variable "subnets" {
-  type        = list(map)
+  type        = list(map(any))
   description = "The list of subnets being created"
 }
 
